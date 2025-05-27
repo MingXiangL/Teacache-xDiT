@@ -1301,34 +1301,41 @@ def generate(args):
             t5_cpu=args.t5_cpu,
         )
         # TeaCache
+        # if use fsdp, WanT2V will wrap WanModel as FSDP, so we need to get the real WanModel
+        if args.dit_fsdp:
+            wan_model = wan_t2v.model.module
+        else:
+            wan_model = wan_t2v.model
+
         wan_t2v.__class__.generate = t2v_generate
-        wan_t2v.model.__class__.enable_teacache = True
-        wan_t2v.model.__class__.forward = new_forward_func
-        wan_t2v.model.forward = types.MethodType(new_forward_func, wan_t2v.model)
-        wan_t2v.model.__class__.cnt = 0
-        wan_t2v.model.__class__.num_steps = args.sample_steps*2
-        wan_t2v.model.__class__.teacache_thresh = args.teacache_thresh
-        wan_t2v.model.__class__.accumulated_rel_l1_distance_even = 0
-        wan_t2v.model.__class__.accumulated_rel_l1_distance_odd = 0
-        wan_t2v.model.__class__.previous_e0_even = None
-        wan_t2v.model.__class__.previous_e0_odd = None
-        wan_t2v.model.__class__.previous_residual_even = None
-        wan_t2v.model.__class__.previous_residual_odd = None
-        wan_t2v.model.__class__.use_ref_steps = args.use_ret_steps
+        wan_model.__class__.enable_teacache = True
+        wan_model.__class__.forward = new_forward_func
+        wan_model.forward = types.MethodType(new_forward_func, wan_t2v.model)
+        wan_model.__class__.cnt = 0
+        wan_model.__class__.num_steps = args.sample_steps*2
+        wan_model.__class__.teacache_thresh = args.teacache_thresh
+        wan_model.__class__.accumulated_rel_l1_distance_even = 0
+        wan_model.__class__.accumulated_rel_l1_distance_odd = 0
+        wan_model.__class__.previous_e0_even = None
+        wan_model.__class__.previous_e0_odd = None
+        wan_model.__class__.previous_residual_even = None
+        wan_model.__class__.previous_residual_odd = None
+        wan_model.__class__.use_ref_steps = args.use_ret_steps
+
         if args.use_ret_steps:
             if '1.3B' in args.ckpt_dir:
-                wan_t2v.model.__class__.coefficients = [-5.21862437e+04, 9.23041404e+03, -5.28275948e+02, 1.36987616e+01, -4.99875664e-02]
+                wan_model.__class__.coefficients = [-5.21862437e+04, 9.23041404e+03, -5.28275948e+02, 1.36987616e+01, -4.99875664e-02]
             if '14B' in args.ckpt_dir:
-                wan_t2v.model.__class__.coefficients = [-3.03318725e+05, 4.90537029e+04, -2.65530556e+03, 5.87365115e+01, -3.15583525e-01]
-            wan_t2v.model.__class__.ret_steps = 5*2
-            wan_t2v.model.__class__.cutoff_steps = args.sample_steps*2
+                wan_model.__class__.coefficients = [-3.03318725e+05, 4.90537029e+04, -2.65530556e+03, 5.87365115e+01, -3.15583525e-01]
+            wan_model.__class__.ret_steps = 5*2
+            wan_model.__class__.cutoff_steps = args.sample_steps*2
         else:
             if '1.3B' in args.ckpt_dir:
-                wan_t2v.model.__class__.coefficients = [2.39676752e+03, -1.31110545e+03,  2.01331979e+02, -8.29855975e+00, 1.37887774e-01]
+                wan_model.__class__.coefficients = [2.39676752e+03, -1.31110545e+03,  2.01331979e+02, -8.29855975e+00, 1.37887774e-01]
             if '14B' in args.ckpt_dir:
-                wan_t2v.model.__class__.coefficients = [-5784.54975374,  5449.50911966, -1811.16591783,   256.27178429, -13.02252404]
-            wan_t2v.model.__class__.ret_steps = 1*2
-            wan_t2v.model.__class__.cutoff_steps = args.sample_steps*2 - 2
+                wan_model.__class__.coefficients = [-5784.54975374,  5449.50911966, -1811.16591783,   256.27178429, -13.02252404]
+            wan_model.__class__.ret_steps = 1*2
+            wan_model.__class__.cutoff_steps = args.sample_steps*2 - 2
         logging.info(
             f"Generating {'image' if 't2i' in args.task else 'video'} ...")
         video = wan_t2v.generate(
@@ -1386,34 +1393,39 @@ def generate(args):
             t5_cpu=args.t5_cpu,
         )
         # TeaCache
+        if args.dit_fsdp:
+            wan_model = wan_i2v.model.module
+        else:
+            wan_model = wan_i2v.model
+
         wan_i2v.__class__.generate = i2v_generate
-        wan_i2v.model.__class__.forward = new_forward_func
-        wan_i2v.model.forward = types.MethodType(new_forward_func, wan_i2v.model)
-        wan_i2v.model.__class__.enable_teacache = True
-        wan_i2v.model.__class__.cnt = 0
-        wan_i2v.model.__class__.num_steps = args.sample_steps*2
-        wan_i2v.model.__class__.teacache_thresh = args.teacache_thresh
-        wan_i2v.model.__class__.accumulated_rel_l1_distance_even = 0
-        wan_i2v.model.__class__.accumulated_rel_l1_distance_odd = 0
-        wan_i2v.model.__class__.previous_e0_even = None
-        wan_i2v.model.__class__.previous_e0_odd = None
-        wan_i2v.model.__class__.previous_residual_even = None
-        wan_i2v.model.__class__.previous_residual_odd = None
-        wan_i2v.model.__class__.use_ref_steps = args.use_ret_steps
+        wan_model.__class__.forward = new_forward_func
+        wan_model.forward = types.MethodType(new_forward_func, wan_i2v.model)
+        wan_model.__class__.enable_teacache = True
+        wan_model.__class__.cnt = 0
+        wan_model.__class__.num_steps = args.sample_steps*2
+        wan_model.__class__.teacache_thresh = args.teacache_thresh
+        wan_model.__class__.accumulated_rel_l1_distance_even = 0
+        wan_model.__class__.accumulated_rel_l1_distance_odd = 0
+        wan_model.__class__.previous_e0_even = None
+        wan_model.__class__.previous_e0_odd = None
+        wan_model.__class__.previous_residual_even = None
+        wan_model.__class__.previous_residual_odd = None
+        wan_model.__class__.use_ref_steps = args.use_ret_steps
         if args.use_ret_steps:
             if '480P' in args.ckpt_dir:
-                wan_i2v.model.__class__.coefficients = [ 2.57151496e+05, -3.54229917e+04,  1.40286849e+03, -1.35890334e+01, 1.32517977e-01]
+                wan_model.__class__.coefficients = [ 2.57151496e+05, -3.54229917e+04,  1.40286849e+03, -1.35890334e+01, 1.32517977e-01]
             if '720P' in args.ckpt_dir:
-                wan_i2v.model.__class__.coefficients = [ 8.10705460e+03,  2.13393892e+03, -3.72934672e+02,  1.66203073e+01, -4.17769401e-02]
-            wan_i2v.model.__class__.ret_steps = 5*2
-            wan_i2v.model.__class__.cutoff_steps = args.sample_steps*2
+                wan_model.__class__.coefficients = [ 8.10705460e+03,  2.13393892e+03, -3.72934672e+02,  1.66203073e+01, -4.17769401e-02]
+            wan_model.__class__.ret_steps = 5*2
+            wan_model.__class__.cutoff_steps = args.sample_steps*2
         else:
             if '480P' in args.ckpt_dir:
-                wan_i2v.model.__class__.coefficients = [-3.02331670e+02,  2.23948934e+02, -5.25463970e+01,  5.87348440e+00, -2.01973289e-01]
+                wan_model.__class__.coefficients = [-3.02331670e+02,  2.23948934e+02, -5.25463970e+01,  5.87348440e+00, -2.01973289e-01]
             if '720P' in args.ckpt_dir:
-                wan_i2v.model.__class__.coefficients = [-114.36346466,   65.26524496,  -18.82220707,    4.91518089,   -0.23412683]
-            wan_i2v.model.__class__.ret_steps = 1*2
-            wan_i2v.model.__class__.cutoff_steps = args.sample_steps*2 - 2
+                wan_model.__class__.coefficients = [-114.36346466,   65.26524496,  -18.82220707,    4.91518089,   -0.23412683]
+            wan_model.__class__.ret_steps = 1*2
+            wan_model.__class__.cutoff_steps = args.sample_steps*2 - 2
 
         logging.info("Generating video ...")
         video = wan_i2v.generate(

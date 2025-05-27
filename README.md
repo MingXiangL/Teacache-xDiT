@@ -18,8 +18,13 @@ Please run the appropriate script (`run_[your_model].sh`) to get started.
 |-------|-----|-----|
 | Wan 2.1-T2V-14B | USP | 473 |
 ||TeaCache(0.2) | 241 |
+#### Usage
+Follow [Wan2.1](https://github.com/Wan-Video/Wan2.1) to clone the repo and finish the installation, then copy 'wan21_teacache.py' in the folder of 'teacache' in this repo to the Wan2.1 repo.
 
-
+To inference the WanT2V on a single machine with multiple GPUs, you can use the following command:
+```
+torchrun --nproc_per_node=8 teacache_generate_parallel.py --task t2v-14B --size 1280*720 --ckpt_dir /PATH/TO/YOUR/Wan2.1-T2V-14B --dit_fsdp --t5_fsdp --ulysses_size 8 --ring_size 1 --prompt "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage." --base_seed 42 --offload_model True --t5_cpu  --teacache_thresh 0.2
+```
 ### Performance on CogVideoX
 | Model | Method | 1x | 2x | 4x | 8x |
 |-------|--------|-----|-----|-----|-----|
